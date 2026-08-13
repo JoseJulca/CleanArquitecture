@@ -1,0 +1,211 @@
+MOTOR DE SCORING CREDITICIO - CLEAN ARCHITECTURE
+=================================================
+
+Estructura propuesta:
+
+motor-scoring-clean/
+│
+├── pom.xml
+├── Dockerfile
+├── docker-compose.yml
+├── docker-compose.h2.yml
+│
+├── motor-scoring-domain/
+│   ├── pom.xml
+│   └── src/main/java/.../domain/
+│       ├── entity/
+│       │   ├── SolicitudCredito.java
+│       │   ├── Solicitante.java
+│       │   ├── EvaluacionCrediticia.java
+│       │   ├── ProductoCrediticio.java
+│       │   ├── ModeloScoring.java
+│       │   ├── VersionModelo.java
+│       │   ├── FactorScoring.java
+│       │   ├── ReglaEvaluacion.java
+│       │   └── ResultadoFactor.java
+│       │
+│       ├── valueobject/
+│       │   ├── NumeroDocumento.java
+│       │   ├── IdentificadorExterno.java
+│       │   ├── Dinero.java
+│       │   ├── Porcentaje.java
+│       │   ├── PuntajeCrediticio.java
+│       │   ├── CapacidadPago.java
+│       │   ├── RelacionDeudaIngreso.java
+│       │   └── RelacionCuotaIngreso.java
+│       │
+│       ├── service/
+│       │   ├── CalculadorScoring.java
+│       │   ├── CalculadorCapacidadPago.java
+│       │   ├── CalculadorRelacionDeudaIngreso.java
+│       │   ├── CalculadorRelacionCuotaIngreso.java
+│       │   └── EvaluadorReglasExcluyentes.java
+│       │
+│       ├── enums/
+│       └── exception/
+│
+├── motor-scoring-application/
+│   ├── pom.xml
+│   └── src/main/java/.../application/
+│       ├── port/
+│       │   ├── in/
+│       │   │   ├── CrearSolicitudCreditoUseCase.java
+│       │   │   └── EjecutarEvaluacionScoringUseCase.java
+│       │   │
+│       │   └── out/
+│       │       ├── SolicitudCreditoRepository.java
+│       │       ├── SolicitanteRepository.java
+│       │       ├── ProductoCrediticioRepository.java
+│       │       ├── ModeloScoringRepository.java
+│       │       └── EvaluacionCrediticiaRepository.java
+│       │
+│       ├── service/
+│       │   ├── CrearSolicitudCreditoService.java
+│       │   └── EjecutarEvaluacionScoringService.java
+│       │
+│       ├── command/
+│       │   ├── CrearSolicitudCreditoCommand.java
+│       │   └── EjecutarEvaluacionScoringCommand.java
+│       │
+│       ├── dto/
+│       │   ├── SolicitudCreditoDto.java
+│       │   ├── EvaluacionScoringDto.java
+│       │   └── ResultadoFactorDto.java
+│       │
+│       └── exception/
+│
+├── motor-scoring-interface-adapters/
+│   ├── pom.xml
+│   └── src/main/java/.../adapter/
+│       ├── in/
+│       │   └── rest/
+│       │       ├── controller/
+│       │       │   └── SolicitudCreditoController.java
+│       │       ├── request/
+│       │       │   ├── CrearSolicitudCreditoRequest.java
+│       │       │   └── EjecutarEvaluacionScoringRequest.java
+│       │       ├── response/
+│       │       │   ├── SolicitudCreditoResponse.java
+│       │       │   ├── EvaluacionScoringResponse.java
+│       │       │   └── ResultadoFactorResponse.java
+│       │       └── exception/
+│       │           └── GlobalExceptionHandler.java
+│       │
+│       └── out/
+│           ├── jpa/
+│           │   ├── adapter/
+│           │   │   ├── SolicitudCreditoJpaRepositoryAdapter.java
+│           │   │   ├── SolicitanteJpaRepositoryAdapter.java
+│           │   │   ├── ProductoCrediticioJpaRepositoryAdapter.java
+│           │   │   ├── ModeloScoringJpaRepositoryAdapter.java
+│           │   │   └── EvaluacionCrediticiaJpaRepositoryAdapter.java
+│           │   ├── entity/
+│           │   │   ├── SolicitudCreditoJpaEntity.java
+│           │   │   ├── SolicitanteJpaEntity.java
+│           │   │   ├── ProductoCrediticioJpaEntity.java
+│           │   │   ├── ModeloScoringJpaEntity.java
+│           │   │   └── EvaluacionCrediticiaJpaEntity.java
+│           │   ├── mapper/
+│           │   └── repository/
+│           │
+│           └── mongodb/
+│               ├── adapter/
+│               │   ├── SolicitudCreditoMongoRepositoryAdapter.java
+│               │   ├── SolicitanteMongoRepositoryAdapter.java
+│               │   ├── ProductoCrediticioMongoRepositoryAdapter.java
+│               │   ├── ModeloScoringMongoRepositoryAdapter.java
+│               │   └── EvaluacionCrediticiaMongoRepositoryAdapter.java
+│               ├── document/
+│               │   ├── SolicitudCreditoMongoDocument.java
+│               │   ├── SolicitanteMongoDocument.java
+│               │   ├── ProductoCrediticioMongoDocument.java
+│               │   ├── ModeloScoringMongoDocument.java
+│               │   └── EvaluacionCrediticiaMongoDocument.java
+│               ├── mapper/
+│               ├── repository/
+│               └── sequence/
+│                   └── MongoSequenceService.java
+│
+├── motor-scoring-frameworks/
+│   ├── pom.xml
+│   └── src/main/java/.../framework/
+│       ├── config/
+│       │   ├── ApplicationBeanConfiguration.java
+│       │   ├── JpaPersistenceConfiguration.java
+│       │   └── MongoPersistenceConfiguration.java
+│       │
+│       ├── transaction/
+│       │   ├── TransactionalCrearSolicitudCreditoUseCase.java
+│       │   └── TransactionalEjecutarEvaluacionScoringUseCase.java
+│       │
+│       └── spring/
+│
+└── motor-scoring-bootstrap/
+    ├── pom.xml
+    └── src/main/
+        ├── java/.../
+        │   └── MotorScoringApplication.java
+        │
+        └── resources/
+            ├── application.yml
+            ├── application-h2.yml
+            └── application-mongodb.yml
+
+
+CRITERIOS DEFINITIVOS
+=====================
+
+1. Las interfaces de entrada:
+   - CrearSolicitudCreditoUseCase
+   - EjecutarEvaluacionScoringUseCase
+   se ubican en:
+   application/port/in/
+
+   En Clean no se conserva la carpeta application/usecase/.
+   Las interfaces UseCase se tratan explícitamente como puertos de entrada.
+
+2. Los contratos de persistencia se ubican en:
+   application/port/out/
+   porque son dependencias requeridas por los casos de uso.
+
+3. La entrada REST se agrupa en:
+   motor-scoring-interface-adapters/adapter/in/rest/
+
+4. El adaptador JPA/H2 se agrupa en:
+   motor-scoring-interface-adapters/adapter/out/jpa/
+
+5. El adaptador MongoDB se agrupa en:
+   motor-scoring-interface-adapters/adapter/out/mongodb/
+
+6. MongoSequenceService se conserva explícitamente en:
+   adapter/out/mongodb/sequence/MongoSequenceService.java
+
+7. La configuración técnica de Spring, JPA y MongoDB se concentra en:
+   motor-scoring-frameworks/.../framework/config/
+
+   Aquí se ubican:
+   - ApplicationBeanConfiguration
+   - JpaPersistenceConfiguration
+   - MongoPersistenceConfiguration
+
+8. Los wrappers transaccionales se ubican en:
+   motor-scoring-frameworks/.../framework/transaction/
+
+9. MotorScoringApplication permanece en:
+   motor-scoring-bootstrap/.../MotorScoringApplication.java
+
+10. OnionBeanConfiguration cambia en Clean:
+    - Nombre: ApplicationBeanConfiguration
+    - Ruta: motor-scoring-frameworks/.../framework/config/ApplicationBeanConfiguration.java
+
+11. La lógica del negocio no se modifica:
+    - entidades
+    - value objects
+    - servicios de dominio
+    - comandos
+    - DTOs
+    - servicios de aplicación
+    - reglas del scoring
+
+12. Cambiar entre H2 y MongoDB continúa afectando únicamente al adaptador
+    de persistencia y a la configuración activa; no modifica la lógica de negocio.
