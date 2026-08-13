@@ -1,0 +1,260 @@
+MOTOR DE SCORING CREDITICIO - CLEAN ARCHITECTURE ACTUALIZADO
+===========================================================
+
+
+Estructura recomendada refinada
+-------------------------------
+	motor-scoring-clean/
+	│
+	├── pom.xml
+	├── Dockerfile
+	├── docker-compose.yml
+	├── docker-compose.h2.yml
+	│
+	├── motor-scoring-domain/
+	│   └── src/main/java/.../domain/
+	│       ├── entity/
+	│       │   ├── SolicitudCredito.java
+	│       │   ├── Solicitante.java
+	│       │   ├── EvaluacionCrediticia.java
+	│       │   ├── ProductoCrediticio.java
+	│       │   ├── ModeloScoring.java
+	│       │   ├── VersionModelo.java
+	│       │   ├── FactorScoring.java
+	│       │   ├── ReglaEvaluacion.java
+	│       │   └── ResultadoFactor.java
+	│       ├── valueobject/
+	│       │   ├── NumeroDocumento.java
+	│       │   ├── IdentificadorExterno.java
+	│       │   ├── Dinero.java
+	│       │   ├── Porcentaje.java
+	│       │   ├── PuntajeCrediticio.java
+	│       │   ├── CapacidadPago.java
+	│       │   ├── RelacionDeudaIngreso.java
+	│       │   └── RelacionCuotaIngreso.java
+	│       ├── service/
+	│       │   ├── CalculadorScoring.java
+	│       │   ├── CalculadorCapacidadPago.java
+	│       │   ├── CalculadorRelacionDeudaIngreso.java
+	│       │   ├── CalculadorRelacionCuotaIngreso.java
+	│       │   └── EvaluadorReglasExcluyentes.java
+	│       ├── enums/
+	│       └── exception/
+	│
+	├── motor-scoring-application/
+	│   └── src/main/java/.../application/
+	│       ├── port/
+	│       │   ├── in/
+	│       │   │   ├── CrearSolicitudCreditoUseCase.java
+	│       │   │   └── EjecutarEvaluacionScoringUseCase.java
+	│       │   └── out/
+	│       │       ├── SolicitudCreditoRepository.java
+	│       │       ├── SolicitanteRepository.java
+	│       │       ├── ProductoCrediticioRepository.java
+	│       │       ├── ModeloScoringRepository.java
+	│       │       └── EvaluacionCrediticiaRepository.java
+	│       ├── service/
+	│       │   ├── CrearSolicitudCreditoService.java
+	│       │   └── EjecutarEvaluacionScoringService.java
+	│       ├── command/
+	│       ├── dto/
+	│       └── exception/
+	│
+	├── motor-scoring-adapter-in-rest/
+	│   └── src/main/java/.../adapter/in/rest/
+	│       ├── controller/
+	│       │   └── SolicitudCreditoController.java
+	│       ├── request/
+	│       ├── response/
+	│       └── exception/
+	│           └── GlobalExceptionHandler.java
+	│
+	├── motor-scoring-adapter-out-jpa/
+	│   └── src/main/java/.../adapter/out/jpa/
+	│       ├── adapter/
+	│       │   ├── SolicitudCreditoJpaRepositoryAdapter.java
+	│       │   ├── SolicitanteJpaRepositoryAdapter.java
+	│       │   ├── ProductoCrediticioJpaRepositoryAdapter.java
+	│       │   ├── ModeloScoringJpaRepositoryAdapter.java
+	│       │   └── EvaluacionCrediticiaJpaRepositoryAdapter.java
+	│       ├── entity/
+	│       ├── mapper/
+	│       └── repository/
+	│
+	├── motor-scoring-adapter-out-mongodb/
+	│   └── src/main/java/.../adapter/out/mongodb/
+	│       ├── adapter/
+	│       │   ├── SolicitudCreditoMongoRepositoryAdapter.java
+	│       │   ├── SolicitanteMongoRepositoryAdapter.java
+	│       │   ├── ProductoCrediticioMongoRepositoryAdapter.java
+	│       │   ├── ModeloScoringMongoRepositoryAdapter.java
+	│       │   └── EvaluacionCrediticiaMongoRepositoryAdapter.java
+	│       ├── document/
+	│       ├── mapper/
+	│       ├── repository/
+	│       ├── sequence/
+	│       │   └── MongoSequenceService.java
+	│       └── initializer/
+	│           └── MongoReferenceDataInitializer.java
+	│
+	├── motor-scoring-frameworks/
+	│   └── src/main/java/.../framework/
+	│       ├── config/
+	│       │   ├── ApplicationBeanConfiguration.java
+	│       │   ├── JpaPersistenceConfiguration.java
+	│       │   └── MongoPersistenceConfiguration.java
+	│       └── transaction/
+	│           ├── TransactionalCrearSolicitudCreditoUseCase.java
+	│           └── TransactionalEjecutarEvaluacionScoringUseCase.java
+	│
+	└── motor-scoring-bootstrap/
+		└── src/main/
+			├── java/.../MotorScoringApplication.java
+			└── resources/
+				├── application.yml
+				├── application-h2.yml
+				└── application-mongodb.yml
+
+
+
+Objetivo de la migración
+------------------------
+	Aplicar Clean Architecture sobre el proyecto que ya venía de Onion y Hexagonal, sin reescribir el scoring.
+	La migración debe reorganizar responsabilidades y dependencias, no cambiar la lógica del negocio.
+
+Flujo base que se conserva
+--------------------------
+	Controller
+	   ↓
+	UseCase / Port IN
+	   ↓
+	Application Service
+	   ↓
+	Repository Port / Port OUT
+	   ↓
+	Mongo Adapter o JPA/H2 Adapter
+	   ↓
+	MongoDB o H2
+
+	Idea central:
+	- El controller no accede directo a persistencia.
+	- La application no conoce MongoDB ni JPA.
+	- Domain no conoce frameworks.
+	- MongoDB y H2 son detalles externos intercambiables.
+
+
+Comparativo Hexagonal → Clean
+-----------------------------
+	HEXAGONAL                         CLEAN
+
+	domain                           domain
+	application/usecase        →     application/port/in
+	domain/repository          →     application/port/out
+
+	presentation               →     motor-scoring-adapter-in-rest
+
+	infrastructure JPA         →     motor-scoring-adapter-out-jpa
+
+	adapter-out-mongodb        →     motor-scoring-adapter-out-mongodb
+
+	configuración Spring       →     motor-scoring-frameworks/config
+
+	bootstrap                  →     motor-scoring-bootstrap
+
+
+
+
+Por qué separar adapters en módulos diferentes
+----------------------------------------------
+	- motor-scoring-adapter-in-rest
+	- motor-scoring-adapter-out-jpa
+	- motor-scoring-adapter-out-mongodb
+
+Motivo:
+	- REST solo debería tener dependencias de Spring Web y application.port.in.
+	- JPA/H2 solo debería tener dependencias de Spring Data JPA, H2, application.port.out y domain.
+	- MongoDB solo debería tener dependencias de Spring Data MongoDB, application.port.out y domain.
+	- Si todo estuviera en un único módulo interface-adapters, un controller podría importar accidentalmente MongoTemplate o JpaRepository.
+	- Con módulos separados, ese error ni siquiera compila si el módulo REST no declara esas dependencias.
+
+Criterios definitivos para decir que es Clean
+---------------------------------------------
+	1. domain no depende de application, adapters, Spring, MongoDB ni JPA.
+	2. application solamente puede depender del domain.
+	3. application.port.in define las operaciones disponibles.
+	4. application.port.out define las dependencias externas que necesitan los casos de uso.
+	5. Los controllers dependen de port.in, nunca de persistencia.
+	6. JPA y MongoDB implementan port.out.
+	7. Los adapters pueden depender de application y domain; nunca al revés.
+	8. Spring, JPA, MongoDB y demás frameworks permanecen en las capas externas.
+	9. bootstrap/Composition Root puede conocer todas las capas para ensamblarlas.
+	10. Cambiar H2 por MongoDB no cambia ningún archivo de dominio o aplicación.
+
+Qué permanece intacto
+---------------------
+	- Entidades de dominio.
+	- Value Objects.
+	- Servicios de dominio.
+	- Reglas del scoring.
+	- Commands.
+	- DTOs.
+	- Servicios de aplicación.
+	- Fórmulas de scoring.
+	- Resultado esperado del caso base: 989 puntos, PREAPROBADA.
+
+Cambio de H2 a MongoDB
+----------------------
+	El cambio sigue siendo por configuración:
+
+	MongoDB:
+	SPRING_PROFILES_ACTIVE=mongodb
+
+	H2:
+	SPRING_PROFILES_ACTIVE=h2
+
+	Spring Boot aplica relaxed binding:
+	SPRING_PROFILES_ACTIVE
+	→ spring.profiles.active
+
+	Regla:
+	MAYÚSCULAS + guiones bajos
+	→ minúsculas + puntos
+
+Tests por capa
+---------------
+	1. Unitarios de dominio
+	   - Prueban entidades, Value Objects y reglas puras.
+	   - Ejemplo: SolicitudCreditoTest.
+
+	2. Unitarios de aplicación
+	   - Prueban casos de uso con puertos simulados mediante Mockito.
+	   - Ejemplo: CrearSolicitudCreditoServiceTest.
+
+	3. Tests de mappers
+	   - Prueban conversión dominio ↔ documento/entidad externa.
+	   - Ejemplos: SolicitudCreditoMongoMapperTest, EvaluacionCrediticiaMongoMapperTest.
+
+	4. Tests unitarios de infraestructura MongoDB
+	   - Prueban secuencias e inicialización con mocks.
+	   - Ejemplos: MongoSequenceServiceTest, MongoReferenceDataInitializerTest.
+
+	5. Tests de integración
+	   - FlujoScoringH2IT: Application + Domain + JPA + H2.
+	   - FlujoScoringMongoIT: Application + Domain + MongoDB adapter + MongoDB Testcontainers.
+
+	6. Tests E2E
+	   - SolicitudCreditoE2EIT: HTTP real + H2.
+	   - SolicitudCreditoMongoE2EIT: HTTP real + MongoDB.
+
+	7. Tests de arquitectura
+	   - CleanArchitectureTest / ArchUnit.
+	   - Validan Dependency Rule y que las capas internas no dependan de las externas.
+
+Mensaje para sustentación
+-------------------------
+	El proyecto no es Clean Architecture por cambiar nombres de carpetas. Es Clean Architecture porque:
+		- Las dependencias apuntan hacia el núcleo.
+		- Domain y Application no conocen frameworks ni bases de datos.
+		- REST es solo un adaptador de entrada.
+		- MongoDB y H2 son adaptadores de salida intercambiables.
+		- La lógica del scoring no cambia al cambiar la infraestructura.
